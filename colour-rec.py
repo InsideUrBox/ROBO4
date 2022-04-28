@@ -1,4 +1,5 @@
 from serial import Serial
+from time import sleep
 import cv2 as cv
 import numpy as np
 
@@ -48,10 +49,11 @@ def track_colour(hsv_values):
       
         for pic, contour in enumerate(contours):
             area = cv.contourArea(contour)
-            if(area > 5000 and area < 20000): # this conditional can be changed to adjust size of colour box found
+            if(area > 500 and area < 20000): # this conditional can be changed to adjust size of colour box found
                 x, y, w, h = cv.boundingRect(contour)
                 mid_x, mid_y = int((x + w) / 2), int((y + h) / 2)
                 position = f"X{mid_x} Y{mid_y}"
+                print("from python: " + position)
                 arduino.write(position.encode('utf-8'))
                 image_frame = cv.rectangle(image_frame, (x, y), 
                                        (x + w, y + h), 
@@ -60,6 +62,10 @@ def track_colour(hsv_values):
                 cv.putText(image_frame, hsv_values["name"] , (x, y),
                         cv.FONT_HERSHEY_SIMPLEX, 1.0,
                         (0, 0, 255))    
+
+        result = arduino.readline()
+        result = result.decode('utf-8').rstrip()
+        print(result)
     
 
         cv.imshow("Colour Detection", image_frame)
@@ -68,5 +74,5 @@ def track_colour(hsv_values):
             break
 
 if __name__ == "__main__":
-    track_colour(green)
+    track_colour(red)
 
