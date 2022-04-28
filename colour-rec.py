@@ -4,25 +4,25 @@ import cv2 as cv
 import numpy as np
 
 
-arduino = Serial('/dev/cu.usbserial-1410', 9600, timeout=0.1) # initiate arduino connection 
+arduino = Serial('/dev/cu.usbserial-1410', 9600, timeout=0.1) # initiate arduino connection (the first param for Serial is the port your arduino is connected with)
+
 
 # dicts containing colour lower and upper hsv values
-red = {
-    "lower" : [136, 87, 111],
-    "upper" : [180, 255, 255],
-    "name" : "red"
-}
+colours = {
+    "red" : {
+        "lower" : [136, 87, 111],
+        "upper" : [180, 255, 255],
+    },
 
-blue = {
-    "lower" : [94, 80, 2],
-    "upper" : [120, 255, 255], 
-    "name" : "blue"
-}
+    "blue" : {
+        "lower" : [94, 80, 2],
+        "upper" : [120, 255, 255], 
+    },
 
-green = {
-    "lower" : [25, 52, 72],
-    "upper" : [102, 255, 255],
-    "name" : "green"
+    "green" : {
+        "lower" : [25, 52, 72],
+        "upper" : [102, 255, 255],
+    }
 }
 
 # provide function with hsv_values to find the desired colours
@@ -42,7 +42,7 @@ def track_colour(hsv_values):
 
         kernal = np.ones((5, 5), "uint8")
         colour_mask = cv.dilate(colour_mask, kernal)
-        res_colour = cv.bitwise_and(image_frame, image_frame, 
+        res_colour = cv.bitwise_and(image_frame, image_frame,
                               mask = colour_mask)
 
         contours, hierarchy = cv.findContours(colour_mask, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
@@ -53,19 +53,19 @@ def track_colour(hsv_values):
                 x, y, w, h = cv.boundingRect(contour)
                 mid_x, mid_y = int((x + w) / 2), int((y + h) / 2)
                 position = f"X{mid_x} Y{mid_y}"
-                print("from python: " + position)
+                # print("from python: " + position) UNCOMMENT TO SEE VALUES FROM PYTHON
                 arduino.write(position.encode('utf-8'))
                 image_frame = cv.rectangle(image_frame, (x, y), 
                                        (x + w, y + h), 
                                        (0, 0, 255), 2)
                 
-                cv.putText(image_frame, hsv_values["name"] , (x, y),
+                cv.putText(image_frame, "target", (x, y),
                         cv.FONT_HERSHEY_SIMPLEX, 1.0,
                         (0, 0, 255))    
 
-        result = arduino.readline()
-        result = result.decode('utf-8').rstrip()
-        print(result)
+        # result = arduino.readline()
+        # result = result.decode('utf-8').rstrip()
+        # print(result)  UNCOMMENT TO SEE VALUES FROM ARDUINO
     
 
         cv.imshow("Colour Detection", image_frame)
@@ -74,5 +74,7 @@ def track_colour(hsv_values):
             break
 
 if __name__ == "__main__":
-    track_colour(red)
+    colour = input("which colour to find? (red, blue, green)  ")
+    track = colours[colour]
+    track_colour(track)
 
