@@ -52,7 +52,7 @@ def track_colour(hsv_values):
             if(area > 500 and area < 20000): # this conditional can be changed to adjust size of colour box found
                 x, y, w, h = cv.boundingRect(contour)
                 mid_x, mid_y = int((x + w) / 2), int((y + h) / 2)
-                position = f"X{mid_x} Y{mid_y}"
+                position = f"X{mid_x}Y{mid_y}"
                 # print("from python: " + position) UNCOMMENT TO SEE VALUES FROM PYTHON
                 arduino.write(position.encode('utf-8'))
                 image_frame = cv.rectangle(image_frame, (x, y), 
