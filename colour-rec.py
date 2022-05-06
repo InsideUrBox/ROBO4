@@ -56,7 +56,11 @@ def track_colour(hsv_values):
                 x, y, w, h = cv.boundingRect(contour)
                 mid_x, mid_y = int((x + w) / 2), int((y + h) / 2)
                 position = f"X{mid_x}Y{mid_y}"
+<<<<<<< HEAD
                 print("from python: " + position) 
+=======
+                # print("from python: " + position) UNCOMMENT TO SEE VALUES FROM PYTHON
+>>>>>>> aee00c5b0feb5618d388045ba24875aae52350ff
                 arduino.write(position.encode('utf-8'))
                 image_frame = cv.rectangle(image_frame, (x, y), 
                                        (x + w, y + h), 
