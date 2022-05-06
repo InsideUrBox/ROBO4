@@ -4,24 +4,23 @@ import cv2 as cv
 import numpy as np
 
 
-arduino = Serial('/dev/cu.usbserial-1410', 9600, timeout=0.1) # initiate arduino connection (the first param for Serial is the port your arduino is connected with)
-
+arduino = Serial('/dev/ttyUSB0', 9600, timeout=0.1) # initiate arduino connection (the first param for Serial is the port your arduino is connected with)
 
 # dicts containing colour lower and upper hsv values
 colours = {
     "red" : {
-        "lower" : [136, 87, 111],
-        "upper" : [180, 255, 255],
+        "lower" : [120, 87, 80], # original [120, 87, 111]
+        "upper" : [180, 255, 255], # original [180, 255, 255]
     },
 
     "blue" : {
-        "lower" : [94, 80, 2],
-        "upper" : [120, 255, 255], 
+        "lower" : [84, 80, 2], # original [84, 80, 2]
+        "upper" : [120, 255, 255], # original [120, 255, 255]
     },
 
     "green" : {
-        "lower" : [25, 52, 72],
-        "upper" : [102, 255, 255],
+        "lower" : [40, 60, 60], # original [25, 52, 72]
+        "upper" : [80, 255, 255], # original [80, 255, 255]
     }
 }
 
@@ -34,6 +33,10 @@ def track_colour(hsv_values):
     while True:
         # read video source saving frames as imgs - convert to hsv colour space
         _, image_frame = camera.read()
+
+        # flip the image frame both on x and y axis and convert colours to hsv
+        image_frame = cv.flip(image_frame, 0)
+        image_frame = cv.flip(image_frame, 1)
         hsv_convert =  cv.cvtColor(image_frame, cv.COLOR_BGR2HSV)
 
         # use hsv values provided to define colour contours
@@ -49,11 +52,11 @@ def track_colour(hsv_values):
       
         for pic, contour in enumerate(contours):
             area = cv.contourArea(contour)
-            if(area > 500 and area < 20000): # this conditional can be changed to adjust size of colour box found
+            if(area > 10000): # this conditional can be changed to adjust size of colour box found
                 x, y, w, h = cv.boundingRect(contour)
                 mid_x, mid_y = int((x + w) / 2), int((y + h) / 2)
-                position = f"X{mid_x} Y{mid_y}"
-                # print("from python: " + position) UNCOMMENT TO SEE VALUES FROM PYTHON
+                position = f"X{mid_x}Y{mid_y}"
+                print("from python: " + position) 
                 arduino.write(position.encode('utf-8'))
                 image_frame = cv.rectangle(image_frame, (x, y), 
                                        (x + w, y + h), 
@@ -61,12 +64,11 @@ def track_colour(hsv_values):
                 
                 cv.putText(image_frame, "target", (x, y),
                         cv.FONT_HERSHEY_SIMPLEX, 1.0,
-                        (0, 0, 255))    
+                        (0, 0, 255))   
 
         # result = arduino.readline()
         # result = result.decode('utf-8').rstrip()
         # print(result)  UNCOMMENT TO SEE VALUES FROM ARDUINO
-    
 
         cv.imshow("Colour Detection", image_frame)
         if cv.waitKey(10) & 0xFF == ord('q'):
@@ -75,6 +77,6 @@ def track_colour(hsv_values):
 
 if __name__ == "__main__":
     colour = input("which colour to find? (red, blue, green)  ")
-    track = colours[colour]
-    track_colour(track)
+    target = colours[colour]
+    track_colour(target)
 
